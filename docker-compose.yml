@@ -1,7 +1,73 @@
-version: "3.8"
 services:
   redis:
     image: redis:7-alpine
+    container_name: lendesk-redis-server
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - redis_data_dev:/data
     ports:
-      - "6379:6379"
-    command: ["redis-server", "--appendonly", "no"]
+      - "${REDIS_PORT:-6379}:6379"
+    profiles: ["dev"]
+    restart: unless-stopped 
+
+  redis-prod:
+    image: redis:7-alpine
+    container_name: lendesk-redis-server-prod
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - redis_data_prod:/data
+    profiles: ["prod"] 
+    restart: always
+
+  app:
+    build:
+      context: .
+      target: development
+    container_name: lendesk-server-dev
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: development
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev"]
+    profiles: ["dev"]
+    restart: unless-stopped 
+
+  app-prod:
+    build:
+      context: .
+      target: production
+    container_name: lendesk-server-prod
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      REDIS_HOST: redis-prod
+      REDIS_PORT: 6379
+    depends_on:
+      redis-prod:
+        condition: service_healthy
+    command: ["node", "dist/server.js"]
+    profiles: ["prod"]
+    restart: always
+
+volumes:
+  redis_data_dev:
+  redis_data_prod:

@@ -9,8 +9,9 @@ import { usersRoutes } from './routes/user.route';
 import { authRoutes } from './routes/auth.route';
 import { sendError } from './errors/api.error';
 import { DomainError } from './errors/domain.error';
+import { registerSwagger } from './plugins/swagger';
 
-export function buildApp(): FastifyInstance {
+export async function buildApp(): Promise<FastifyInstance> {
     const app = Fastify({
         logger: false,
         ajv: {
@@ -31,6 +32,10 @@ export function buildApp(): FastifyInstance {
     const authService = new AuthService(userRepo);
 
     app.setErrorHandler((error, request, reply) => {
+        if (error && typeof error === 'object' && 'validation' in error) {
+            return sendError(reply, 400, "VALIDATION_ERROR");
+        }
+
         if (error instanceof DomainError) {
             switch (error.code) {
                 case "VALIDATION_ERROR":
@@ -47,6 +52,10 @@ export function buildApp(): FastifyInstance {
         request.log?.error?.(error);
         return sendError(reply, 500, "INTERNAL_ERROR");
     });
+
+    if (process.env.NODE_ENV !== "production") {
+        await registerSwagger(app);
+    }
 
     usersRoutes(app, { userService });
     authRoutes(app, { authService });

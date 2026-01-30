@@ -4,9 +4,9 @@ import { buildApp } from '../../src/app';
 import Redis from "ioredis";
 import { ApiErrorCode, errorMessages } from '@/errors/api.error';
 
-describe('Create Users (POST /v1/users)', () => {
-    const app = buildApp();
-    const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
+describe('Create Users (POST /v1/users)', async () => {
+    const app = await buildApp();
+    const redis = new Redis(`${process.env.REDIS_HOST || "redis://localhost"}:${process.env.REDIS_PORT || "6379"}`);
 
     beforeAll(async () => {
         await app.ready();

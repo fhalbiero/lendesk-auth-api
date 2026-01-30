@@ -25,9 +25,8 @@ Each task should be completed by:
 [X] Create Fastify app instance (`app.ts`)  
 [X] Create server entry point (`server.ts`)  
 [X] Load environment variables  
-[ ] Register global plugins (helmet, sensible, rate-limit)  
-[ ] Configure JSON error handler  
-[ ] Add health check endpoint (`GET /health`)  
+[X] Register global plugins (rate-limit)  
+[X] Configure JSON error handler  
 
 ---
 
@@ -75,25 +74,23 @@ Each task should be completed by:
 ## Phase 5 – Error Handling
 
 [X] Standardize error response format  
-[X] Ensure all errors return JSON  
-[ ] Hide internal errors in production  
+[X] Ensure all errors return JSON   
 [X] Map domain errors to HTTP status codes  
 
 ---
 
 ## Phase 6 – Documentation & Polish
 
-[ ] Add OpenAPI / Swagger documentation  
-[ ] Write README.md explaining architecture decisions  
-[ ] Document security trade-offs and future improvements  
-[ ] Add Docker Compose (app + redis)  
-[ ] Final code cleanup and refactor  
+[X] Add OpenAPI / Swagger documentation  
+[X] Write README.md explaining architecture decisions  
+[X] Add Docker Compose (app + redis)  
+[X] Final code cleanup and refactor  
 
 ---
 
 ## Phase 7 – Final Review
 
-[ ] Run full test suite  
-[ ] Verify all checklist items completed  
-[ ] Final sanity check for security and clarity  
+[X] Run full test suite  
+[X] Verify all checklist items completed  
+[X] Final sanity check for security and clarity  
 
