@@ -1,10 +1,14 @@
 import Fastify, { FastifyInstance } from 'fastify';
-import { getRedis, closeRedis } from './db/redis';
-import { randomUUID } from 'crypto';
 
-function normalizeUsername(username: string): string {
-    return username.trim().toLowerCase();
-}
+import { getRedis, closeRedis } from './db/redis';
+import { registerRateLimit } from './plugins/rate-limit';
+import { UserRepository } from './repositories/user.repo';
+import { UserService } from './services/user.service';
+import { AuthService } from './services/auth.service';
+import { usersRoutes } from './routes/user.route';
+import { authRoutes } from './routes/auth.route';
+import { sendError } from './errors/api.error';
+import { DomainError } from './errors/domain.error';
 
 export function buildApp(): FastifyInstance {
     const app = Fastify({
@@ -15,48 +19,37 @@ export function buildApp(): FastifyInstance {
                 removeAdditional: "all",
                 useDefaults: true,
                 coerceTypes: false,
-            },
+            }
         }
     });
+
+    registerRateLimit(app);
 
     const redis = getRedis();
+    const userRepo = new UserRepository(redis);
+    const userService = new UserService(userRepo);
+    const authService = new AuthService(userRepo);
 
-    app.post('/v1/users', async (request, reply) => {
-        const { username, password } = request.body as { username?: string; password?: string; }
-
-        if (!username || !password) {
-            return reply.status(400).send({
-                error: { code: "VALIDATION_ERROR", message: "Invalid request" },
-            });
+    app.setErrorHandler((error, request, reply) => {
+        if (error instanceof DomainError) {
+            switch (error.code) {
+                case "VALIDATION_ERROR":
+                    return sendError(reply, 400, error.code, error.message);
+                case "USERNAME_TAKEN":
+                    return sendError(reply, 409, error.code, error.message);
+                case "INVALID_CREDENTIALS":
+                    return sendError(reply, 401, error.code, error.message);
+                default:
+                    return sendError(reply, 500, "INTERNAL_ERROR");
+            }
         }
 
-        const usernameNormalized = normalizeUsername(username);
-        const userId = randomUUID();
-        const usernameKey = `user:unique-username:${usernameNormalized}`;
-
-        const response = await redis.set(usernameKey, userId, "NX");
-
-        if (response !== "OK") {
-            return reply.status(409).send({
-                error: {
-                    code: "USERNAME_TAKEN",
-                    message: "Username is already in use",
-                },
-            });
-        }
-
-        await redis.hset(`user:${userId}`, {
-            id: userId,
-            username,
-            username_normalized: usernameNormalized,
-            created_at: new Date().toISOString(),
-        });
-
-        return reply.status(201).send({
-            id: userId,
-            username: username.trim()
-        });
+        request.log?.error?.(error);
+        return sendError(reply, 500, "INTERNAL_ERROR");
     });
+
+    usersRoutes(app, { userService });
+    authRoutes(app, { authService });
 
     app.addHook("onClose", async () => {
         await closeRedis();

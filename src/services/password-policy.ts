@@ -1,7 +1,7 @@
 type PasswordValidationResult = { ok: true } | { ok: false; reason: string };
 
 export function validatePassword(password: string): PasswordValidationResult {
-    
+
   if (typeof password !== "string") {
     return { ok: false, reason: "not_string" };
   }
@@ -25,7 +25,7 @@ export function validatePassword(password: string): PasswordValidationResult {
 
   const score = [hasLower, hasUpper, hasNumber, hasSymbol].filter(Boolean).length;
 
-  if (score < 3) {
+  if (score < 4) {
     return { ok: false, reason: "weak" };
   }
 

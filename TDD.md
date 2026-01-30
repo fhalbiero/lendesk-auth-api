@@ -46,39 +46,38 @@ Each task should be completed by:
 [X] Create user successfully  
 [X] Normalize username (trim + lowercase)  
 [X] Prevent duplicate usernames (case-insensitive)  
-[ ] Reject missing username  
-[ ] Reject missing password  
-[ ] Reject weak password  
+[X] Reject missing username  
+[X] Reject missing password  
+[X] Reject weak password  
 
 ### Implementation 
-[ ] Implement password hashing (argon2id)  
-[ ] Store user in Redis  
-[ ] Enforce uniqueness using atomic Redis operation  
-[ ] Return sanitized response (no password hash)  
+[X] Implement password hashing (argon2id)  
+[X] Store user in Redis  
+[X] Enforce uniqueness using atomic Redis operation  
+[X] Return sanitized response (no password hash)  
 
 ---
 
 ## Phase 4 – Authentication (`POST /v1/auth`)
 
 ### Integration tests
-[ ] Authenticate successfully with correct credentials  
-[ ] Reject authentication with wrong password  
-[ ] Reject authentication with unknown username  
-[ ] Ensure identical error response for all auth failures  
+[X] Authenticate successfully with correct credentials  
+[X] Reject authentication with wrong password  
+[X] Reject authentication with unknown username  
+[X] Ensure identical error response for all auth failures  
 
 ### Implementation
-[ ] Implement password verification  
-[ ] Implement constant-time behavior for unknown users  
-[ ] Add rate limiting to auth endpoint   
+[X] Implement password verification   
+[X] Add rate limiting to auth endpoint   
 
 ---
 
 ## Phase 5 – Error Handling
 
-[ ] Standardize error response format  
-[ ] Ensure all errors return JSON  
+[X] Standardize error response format  
+[X] Ensure all errors return JSON  
 [ ] Hide internal errors in production  
-[ ] Map domain errors to HTTP status codes  
+[X] Map domain errors to HTTP status codes  
 
 ---
 
